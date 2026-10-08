@@ -593,6 +593,25 @@ function sortRows(rows){
       if(bv!==av)return bv-av;
 
       return String(b.ref||'').localeCompare(String(a.ref||''));
+    });
+  }
+
+  const key=activeSort.key;
+  const direction=activeSort.direction==='asc' ? 1 : -1;
+
+  return [...rows].sort((a,b)=>{
+    const av=sortValue(a,key);
+    const bv=sortValue(b,key);
+
+    if(typeof av==='number' && typeof bv==='number'){
+      return (av-bv)*direction;
+    }
+
+    return String(av).localeCompare(
+      String(bv),
+      undefined,
+      {numeric:true,sensitivity:'base'}
+    )*direction;
   });
 }
 
