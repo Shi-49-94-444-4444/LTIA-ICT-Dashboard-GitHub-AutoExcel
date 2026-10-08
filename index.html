@@ -417,6 +417,7 @@ let latest = [];
 let byRef = {};
 let activeTab='all';
 let activeSort={key:null,direction:null};
+let activeKpiFilter=null;
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function badge(s){let x=(s||'').trim(); let c=['A','B','C'].includes(x)?x:'other'; return x?`<span class="badge ${c}">${esc(x)}</span>`:'<span class="muted">—</span>';}
@@ -584,24 +585,14 @@ function sortValue(x,key){
 }
 
 function sortRows(rows){
-  if(!activeSort.key) return rows;
+  if(!activeSort.key){
+    return [...rows].sort((a,b)=>{
+      const av=Number(a.vietur_hard_serial||0);
+      const bv=Number(b.vietur_hard_serial||0);
 
-  const key=activeSort.key;
-  const direction=activeSort.direction==='asc' ? 1 : -1;
+      if(bv!==av)return bv-av;
 
-  return [...rows].sort((a,b)=>{
-    const av=sortValue(a,key);
-    const bv=sortValue(b,key);
-
-    if(typeof av==='number' && typeof bv==='number'){
-      return (av-bv)*direction;
-    }
-
-    return String(av).localeCompare(
-      String(bv),
-      undefined,
-      {numeric:true,sensitivity:'base'}
-    )*direction;
+      return String(b.ref||'').localeCompare(String(a.ref||''));
   });
 }
 
@@ -868,7 +859,7 @@ function printCurrentView(){
   const doPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch(e){alert('Print could not start. '+e.message);}setTimeout(()=>frame.remove(),2000);};
   if(d.readyState==='complete') setTimeout(doPrint,180); else frame.onload=()=>setTimeout(doPrint,180);
 }
-function resetFilters(){document.getElementById('search').value='';['typeFilter','systemFilter','keywordFilter','holderFilter','statusFilter'].forEach(id=>clearMultiFilter(id,false));activeTab='all';activeKpiFilter=null;document.getElementById('kpiFilterBar').classList.remove('show');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='all'));render();}
+function resetFilters(){document.getElementById('search').value='';['typeFilter','systemFilter','keywordFilter','holderFilter','statusFilter'].forEach(id=>clearMultiFilter(id,false));activeTab='all';activeKpiFilter=null;activeSort={key:null,direction:null};document.getElementById('kpiFilterBar').classList.remove('show');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='all'));render();}
 function downloadCSV(){
   const rows=sortRows(filtered());
   updateSortHeaders(); 

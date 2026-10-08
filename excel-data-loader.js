@@ -207,14 +207,7 @@
     const c = spec.columns;
     const ref = text(value(ws, row, c.ref));
     const tt = value(ws, row, 0);
-    const ttText = String(tt || '').trim();
-    const ttIsFormula = ttText.startsWith('=');
-
-    if (
-      !ref ||
-      (!ttIsFormula &&
-      (ttText === '' || !Number.isFinite(Number(tt))))
-    ) return null;
+    if (!ref || String(tt).trim() === '' || !Number.isFinite(Number(tt))) return null;
 
     const record = {
       type: spec.type,
