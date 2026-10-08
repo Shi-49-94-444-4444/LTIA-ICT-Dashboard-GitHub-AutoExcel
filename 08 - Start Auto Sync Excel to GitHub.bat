@@ -2,12 +2,17 @@
 title LTIA Dashboard - Excel Auto Sync to GitHub
 cd /d "%~dp0"
 
+set "GIT_CMD=git"
 where git >nul 2>&1
 if errorlevel 1 (
-  echo [ERROR] Git is not installed or not available in PATH.
-  echo Install Git for Windows and make sure this project has an origin remote.
-  pause
-  exit /b 1
+  if exist "C:\Program Files\Git\cmd\git.exe" (
+    set "GIT_CMD=C:\Program Files\Git\cmd\git.exe"
+  ) else (
+    echo [ERROR] Git for Windows was not found.
+    echo Install Git for Windows first.
+    pause
+    exit /b 1
+  )
 )
 
 if not exist "ICT-RFA-RFI-lists-New.xlsx" (

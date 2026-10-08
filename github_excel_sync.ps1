@@ -11,47 +11,46 @@ $ExcelPath = Join-Path $ProjectRoot $ExcelFile
 $SyncRoot = Join-Path $env:LOCALAPPDATA 'LTIA Dashboard\Git Data Sync'
 $SyncRepo = Join-Path $SyncRoot 'repo'
 
-function Git([string[]]$Args) {
+function RunGit([string[]]$Args) {
   & git @Args
   if ($LASTEXITCODE -ne 0) { throw "git $($Args -join ' ') failed with exit code $LASTEXITCODE" }
 }
 
-function GitText([string[]]$Args) {
+function RunGitText([string[]]$Args) {
   $result = & git @Args 2>&1
   if ($LASTEXITCODE -ne 0) { throw "git $($Args -join ' ') failed: $($result -join ' ')" }
   return ($result -join "`n").Trim()
 }
 
 function EnsureSyncRepo {
-  $remote = GitText @('-C', $ProjectRoot, 'remote', 'get-url', 'origin')
-  if ([string]::IsNullOrWhiteSpace($remote)) { throw 'No origin remote is configured in this project.' }
+  $remote = 'https://github.com/Shi-49-94-444-4444/LTIA-ICT-Dashboard-GitHub-AutoExcel.git'
 
   New-Item -ItemType Directory -Force -Path $SyncRoot | Out-Null
 
   if (-not (Test-Path (Join-Path $SyncRepo '.git'))) {
     if (Test-Path $SyncRepo) { Remove-Item -LiteralPath $SyncRepo -Recurse -Force }
-    Git @('clone', $remote, $SyncRepo)
+    RunGit @('clone', $remote, $SyncRepo)
   }
 
-  Git @('-C', $SyncRepo, 'fetch', 'origin')
+  RunGit @('-C', $SyncRepo, 'fetch', 'origin')
 
   $remoteBranch = & git -C $SyncRepo ls-remote --heads origin $DataBranch 2>$null
-  $current = GitText @('-C', $SyncRepo, 'rev-parse', '--abbrev-ref', 'HEAD')
+  $current = RunGitText @('-C', $SyncRepo, 'rev-parse', '--abbrev-ref', 'HEAD')
 
   if ($remoteBranch) {
     if ($current -ne $DataBranch) {
       & git -C $SyncRepo checkout $DataBranch 2>$null | Out-Null
-      if ($LASTEXITCODE -ne 0) { Git @('-C', $SyncRepo, 'checkout', '-B', $DataBranch, "origin/$DataBranch") }
+      if ($LASTEXITCODE -ne 0) { RunGit @('-C', $SyncRepo, 'checkout', '-B', $DataBranch, "origin/$DataBranch") }
     }
-    Git @('-C', $SyncRepo, 'reset', '--hard', "origin/$DataBranch")
-    Git @('-C', $SyncRepo, 'clean', '-fd')
+    RunGit @('-C', $SyncRepo, 'reset', '--hard', "origin/$DataBranch")
+    RunGit @('-C', $SyncRepo, 'clean', '-fd')
   }
   else {
     if ($current -ne $DataBranch) {
-      Git @('-C', $SyncRepo, 'checkout', '--orphan', $DataBranch)
+      RunGit @('-C', $SyncRepo, 'checkout', '--orphan', $DataBranch)
     }
     & git -C $SyncRepo rm -rf . 2>$null | Out-Null
-    Git @('-C', $SyncRepo, 'clean', '-fd')
+    RunGit @('-C', $SyncRepo, 'clean', '-fd')
   }
 
   $rootName = (& git -C $ProjectRoot config user.name 2>$null).Trim()
@@ -82,15 +81,15 @@ function SyncExcel {
     "Synced at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
   ) | Set-Content -LiteralPath $meta -Encoding UTF8
 
-  Git @('-C', $syncRepo, 'add', '-f', '--', $ExcelFile, 'Data Last Updated.txt')
+  RunGit @('-C', $syncRepo, 'add', '-f', '--', $ExcelFile, 'Data Last Updated.txt')
   & git -C $syncRepo diff --cached --quiet
   if ($LASTEXITCODE -eq 0) {
     return $false
   }
 
   $message = "Auto-sync Excel $($source.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
-  Git @('-C', $syncRepo, 'commit', '-m', $message)
-  Git @('-C', $syncRepo, 'push', '-u', 'origin', $DataBranch)
+  RunGit @('-C', $syncRepo, 'commit', '-m', $message)
+  RunGit @('-C', $syncRepo, 'push', '-u', 'origin', $DataBranch)
   return $true
 }
 
