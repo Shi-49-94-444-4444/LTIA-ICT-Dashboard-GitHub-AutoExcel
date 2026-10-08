@@ -91,6 +91,30 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
   white-space:pre-line;
   line-height:1.25;
 }
+.sortable{
+  cursor:pointer;
+  user-select:none;
+}
+.sortable:hover{
+  filter:brightness(.94);
+}
+.sort-icon{
+  display:inline-block;
+  margin-left:5px;
+  font-size:11px;
+  font-weight:900;
+  opacity:.45;
+  vertical-align:middle;
+}
+.sortable.active .sort-icon{
+  opacity:1;
+}
+.sortable.active.desc .sort-icon{
+  color:#3159a6;
+}
+.sortable.active.asc .sort-icon{
+  color:#3159a6;
+}
 @media(max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}.modal-body{grid-template-columns:1fr}.leftgrid{grid-template-columns:1fr}.tabs{display:none}.actions .hide-sm{display:none}}
 
 
@@ -326,10 +350,19 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th>Document Reference No.</th><th>Type</th><th>System</th><th>Subject</th>
-            <th>Vietur Hard Copy</th><th>JCJV Deadline</th><th>JCJV Status</th><th>JCJV Hard Copy</th>
-            <th>Employer Status</th><th>Employer Hard Copy</th><th>Current Holder</th>
-            <th>Response Status</th><th>Delayed Days</th>
+            <th class="sortable" onclick="toggleSort('ref')">Document Reference No. <span class="sort-icon" data-sort="ref">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('type')">Type <span class="sort-icon" data-sort="type">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('system')">System <span class="sort-icon" data-sort="system">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('subject')">Subject <span class="sort-icon" data-sort="subject">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('vietur_hard')">Vietur Hard Copy <span class="sort-icon" data-sort="vietur_hard">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('deadline_calc')">JCJV Deadline <span class="sort-icon" data-sort="deadline_calc">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('jcjv_status')">JCJV Status <span class="sort-icon" data-sort="jcjv_status">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('jcjv_hard')">JCJV Hard Copy <span class="sort-icon" data-sort="jcjv_hard">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('employer_status')">Employer Status <span class="sort-icon" data-sort="employer_status">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('employer_hard')">Employer Hard Copy <span class="sort-icon" data-sort="employer_hard">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('current_holder')">Current Holder <span class="sort-icon" data-sort="current_holder">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('response')">Response Status <span class="sort-icon" data-sort="response">⇅</span></th>
+            <th class="sortable" onclick="toggleSort('delayed')">Delayed Days <span class="sort-icon" data-sort="delayed">⇅</span></th>
           </tr></thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -383,7 +416,7 @@ let DATA = [];
 let latest = [];
 let byRef = {};
 let activeTab='all';
-let activeKpiFilter=null;
+let activeSort={key:null,direction:null};
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function badge(s){let x=(s||'').trim(); let c=['A','B','C'].includes(x)?x:'other'; return x?`<span class="badge ${c}">${esc(x)}</span>`:'<span class="muted">—</span>';}
@@ -516,6 +549,78 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
   activeTab=b.dataset.tab; render();
 });
 
+function toggleSort(key){
+  if(activeSort.key!==key){
+    activeSort={key,direction:'desc'};
+  }else if(activeSort.direction==='desc'){
+    activeSort={key,direction:'asc'};
+  }else{
+    activeSort={key:null,direction:null};
+  }
+
+  render();
+}
+
+function sortValue(x,key){
+  switch(key){
+    case 'ref': return String(x.ref||'').trim();
+    case 'type': return String(x.type||'').trim();
+    case 'system': return String(x.system||'').trim();
+    case 'subject': return String(x.subject||x.subject_vi||'').trim();
+    case 'vietur_hard': return Number(x.vietur_hard_serial||0);
+    case 'deadline_calc': return Number(x.deadline_calc_serial||0);
+    case 'jcjv_status': return String(x.jcjv_status_display||'').trim();
+    case 'jcjv_hard': return Number(x.jcjv_hard_serial||0);
+    case 'employer_status': return String(x.employer_status||'').trim();
+    case 'employer_hard': return Number(x.employer_hard_serial||0);
+    case 'current_holder': return String(x.current_holder||'').trim();
+    case 'response': return String(x.response_assessment||'').trim();
+    case 'delayed': {
+      const v=rowDelayedDays(x);
+      return v==='' || v==='—' ? -Infinity : Number(v);
+    }
+    default: return '';
+  }
+}
+
+function sortRows(rows){
+  if(!activeSort.key) return rows;
+
+  const key=activeSort.key;
+  const direction=activeSort.direction==='asc' ? 1 : -1;
+
+  return [...rows].sort((a,b)=>{
+    const av=sortValue(a,key);
+    const bv=sortValue(b,key);
+
+    if(typeof av==='number' && typeof bv==='number'){
+      return (av-bv)*direction;
+    }
+
+    return String(av).localeCompare(
+      String(bv),
+      undefined,
+      {numeric:true,sensitivity:'base'}
+    )*direction;
+  });
+}
+
+function updateSortHeaders(){
+  document.querySelectorAll('.sortable').forEach(th=>{
+    const icon=th.querySelector('.sort-icon');
+    const key=icon?.dataset.sort;
+
+    th.classList.remove('active','asc','desc');
+
+    if(key===activeSort.key){
+      th.classList.add('active',activeSort.direction);
+      icon.textContent=activeSort.direction==='desc'?'↓':'↑';
+    }else{
+      icon.textContent='⇅';
+    }
+  });
+}
+
 function filtered(){
   const q=document.getElementById('search').value.trim().toLowerCase(),types=mfState('typeFilter'),systems=mfState('systemFilter'),keywords=mfState('keywordFilter'),holders=mfState('holderFilter'),statuses=mfState('statusFilter');
   return latest.filter(x=>{
@@ -539,11 +644,12 @@ function filtered(){
     if(activeTab==='over21' && !(x.current_holder==='JCJV' && Number(x.jcjv_days_calc)>21)) return false;
     if(activeTab==='under21' && !(x.current_holder==='JCJV' && Number(x.jcjv_days_calc)<=21)) return false;
     return true;
-  }).sort((a,b)=>{const av=Number(a.vietur_hard_serial||0),bv=Number(b.vietur_hard_serial||0);if(bv!==av)return bv-av;return String(b.ref||'').localeCompare(String(a.ref||''));});
+  });
 }
 
 function render(){
-  const rows=filtered();
+  const rows=sortRows(filtered());
+  updateSortHeaders();
   const tb=document.getElementById('tbody');
   tb.innerHTML=rows.length?rows.map(x=>`<tr onclick="openModal('${x.ref.replace(/'/g,"\\'")}')">
     <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(String(x.system||'—').trim().split(/\s+/).join('\n'))}</b></td>
@@ -764,7 +870,9 @@ function printCurrentView(){
 }
 function resetFilters(){document.getElementById('search').value='';['typeFilter','systemFilter','keywordFilter','holderFilter','statusFilter'].forEach(id=>clearMultiFilter(id,false));activeTab='all';activeKpiFilter=null;document.getElementById('kpiFilterBar').classList.remove('show');document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='all'));render();}
 function downloadCSV(){
-  const rows=filtered(); const headers=['Document Reference No.','Type','System','Subject','Vietur Hard Copy','JCJV Deadline','JCJV Status','JCJV Hard Copy','Employer Status','Employer Hard Copy','Current Holder','Response Status','Delayed Days'];
+  const rows=sortRows(filtered());
+  updateSortHeaders(); 
+  const headers=['Document Reference No.','Type','System','Subject','Vietur Hard Copy','JCJV Deadline','JCJV Status','JCJV Hard Copy','Employer Status','Employer Hard Copy','Current Holder','Response Status','Delayed Days'];
   const body=rows.map(x=>[x.ref,x.type,x.system,x.subject,x.vietur_hard,x.deadline_calc,x.jcjv_status_display,x.jcjv_hard,x.employer_status,x.employer_hard,x.current_holder,x.response_assessment,rowDelayedDays(x)]);
   const csv=[headers,...body].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='LTIA_TE_Dashboard_Filtered.csv';a.click();URL.revokeObjectURL(a.href);
