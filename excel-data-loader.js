@@ -206,7 +206,8 @@
   function buildRecord(ws, row, spec) {
     const c = spec.columns;
     const ref = text(value(ws, row, c.ref));
-    if (!ref || !Number.isFinite(Number(value(ws, row, 0)))) return null;
+    const tt = value(ws, row, 0);
+    if (!ref || String(tt).trim() === '' || !Number.isFinite(Number(tt))) return null;
 
     const record = {
       type: spec.type,
