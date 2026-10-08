@@ -1,0 +1,12 @@
+GITHUB DEPLOYMENT LAYOUT
+
+Pages branch (main or gh-pages):
+- index.html
+- dashboard-config.js
+- excel-data-loader.js
+
+Data branch (dashboard-data):
+- ICT-RFA-RFI-lists-New.xlsx
+- Data Last Updated.txt
+
+The dashboard reads the Excel directly from dashboard-data. Updating the Excel does not require a new GitHub Pages build.
