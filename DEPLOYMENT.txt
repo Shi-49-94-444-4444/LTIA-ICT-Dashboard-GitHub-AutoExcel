@@ -1,12 +1,37 @@
-GITHUB DEPLOYMENT LAYOUT
+DEPLOYMENT LAYOUT
 
-Pages branch (main or gh-pages):
+main (GitHub Pages / code):
 - index.html
 - dashboard-config.js
 - excel-data-loader.js
+- other dashboard assets
+- .github/workflows/static.yml
 
-Data branch (dashboard-data):
+dashboard-data (data only):
 - ICT-RFA-RFI-lists-New.xlsx
 - Data Last Updated.txt
 
-The dashboard reads the Excel directly from dashboard-data. Updating the Excel does not require a new GitHub Pages build.
+The browser reads the workbook from the dashboard-data branch.
+Updating the workbook therefore does NOT trigger the Pages workflow because static.yml only runs on pushes to main.
+
+ONE-TIME SETUP
+1. Put the dashboard project files into the local clone of the GitHub repository.
+2. Keep ICT-RFA-RFI-lists-New.xlsx next to the BAT/PS1 files locally; it is ignored from main by .gitignore.
+3. Push the dashboard code to main.
+4. Confirm the dashboard-data branch exists on GitHub and contains ICT-RFA-RFI-lists-New.xlsx.
+5. In Settings > Pages, set Source = GitHub Actions.
+6. Run 08 - Start Auto Sync Excel to GitHub.bat. On first successful run it uploads/synchronizes the workbook to dashboard-data.
+
+DAILY USE
+1. Leave the auto-sync BAT window running.
+2. Open ICT-RFA-RFI-lists-New.xlsx.
+3. Edit the workbook.
+4. Save (Ctrl+S) and finish the save.
+5. The watcher waits until the file stops changing, then commits/pushes it to dashboard-data.
+6. The dashboard polls every 15 seconds and reloads when the workbook version changes. No Pages rebuild is required.
+
+AUTHENTICATION
+The local Git installation must already be able to pull/push this repository. The first sync may ask GitHub/Git Credential Manager for authentication.
+
+PUBLIC REPOSITORY
+For direct browser loading from raw.githubusercontent.com, the repository needs to be publicly readable.

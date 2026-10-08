@@ -82,7 +82,7 @@ function SyncExcel {
     "Synced at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
   ) | Set-Content -LiteralPath $meta -Encoding UTF8
 
-  Git @('-C', $syncRepo, 'add', '--', $ExcelFile, 'Data Last Updated.txt')
+  Git @('-C', $syncRepo, 'add', '-f', '--', $ExcelFile, 'Data Last Updated.txt')
   & git -C $syncRepo diff --cached --quiet
   if ($LASTEXITCODE -eq 0) {
     return $false
@@ -99,6 +99,7 @@ Write-Host ' LTIA Dashboard - Excel Auto Sync to GitHub'
 Write-Host '============================================='
 Write-Host "Excel : $ExcelPath"
 Write-Host "Branch: $DataBranch"
+if ($DataBranch -ne 'dashboard-data') { throw 'This sync script is configured for the dashboard-data branch. Do not change DataBranch.' }
 Write-Host "Poll  : every $CheckSeconds sec (stable for $StableSeconds sec)"
 Write-Host ''
 

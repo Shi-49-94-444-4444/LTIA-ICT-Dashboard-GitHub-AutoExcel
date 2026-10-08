@@ -1,0 +1,5 @@
+# Local Excel source is synced separately to the dashboard-data branch.
+ICT-RFA-RFI-lists-New.xlsx
+
+# Optional local logs / temp files
+*.log

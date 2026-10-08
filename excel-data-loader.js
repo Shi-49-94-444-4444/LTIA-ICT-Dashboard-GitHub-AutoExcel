@@ -4,7 +4,6 @@
   const CONFIG = Object.assign({
     excelFile: 'ICT-RFA-RFI-lists-New.xlsx',
     dataBranch: 'dashboard-data',
-    fallbackBranch: 'main',
     dataUrl: '',
     refreshMs: 15000
   }, window.LTIA_DASHBOARD_CONFIG || {});
@@ -304,10 +303,12 @@
     const urls = [];
     if (CONFIG.dataUrl) urls.push(CONFIG.dataUrl);
     const primary = githubRawUrl(CONFIG.dataBranch);
-    const fallback = githubRawUrl(CONFIG.fallbackBranch);
     if (primary) urls.push(primary);
-    if (fallback && fallback !== primary) urls.push(fallback);
-    urls.push(`./${CONFIG.excelFile.split('/').map(encodeURIComponent).join('/')}`);
+
+    // Local preview only. GitHub Pages must read from dashboard-data.
+    if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) {
+      urls.push(`./${CONFIG.excelFile.split('/').map(encodeURIComponent).join('/')}`);
+    }
     return [...new Set(urls)];
   }
 
