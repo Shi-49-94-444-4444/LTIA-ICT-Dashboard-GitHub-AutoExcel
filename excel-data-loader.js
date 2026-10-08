@@ -138,7 +138,8 @@
   }
 
   function currentHolder(record) {
-    if (String(record.withdraw || '').trim().toUpperCase() === 'X') return 'Withdrawn / Changed';
+    const w = String(record.withdraw || '').trim().toUpperCase();
+    if (w === 'X' || w === 'O') return 'Withdrawn / Changed';
 
     const emp = String(record.employer_status || '').trim().toUpperCase();
     if (record.type === 'RFI') {
