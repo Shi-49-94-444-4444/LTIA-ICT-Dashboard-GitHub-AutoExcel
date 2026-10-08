@@ -490,7 +490,18 @@ function multiFilterChanged(id){MULTI_FILTERS[id].values=[...document.querySelec
 function clearMultiFilter(id,doRender=true){MULTI_FILTERS[id].values=[];const root=document.getElementById(id+'Multi');if(root)root.querySelectorAll('input').forEach(i=>i.checked=false);updateMultiLabel(id);if(doRender)render();}
 document.addEventListener('click',()=>document.querySelectorAll('.multi-filter.open').forEach(x=>x.classList.remove('open')));
 
-function populateSystems(){const vals=[...new Set(latest.map(x=>String(x.system||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));setMultiOptions('systemFilter',[{items:vals}]);}
+function populateSystems(){
+  const vals=[...new Set(
+    latest.flatMap(x =>
+      String(x.system||'')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+    )
+  )].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+
+  setMultiOptions('systemFilter',[{items:vals}]);
+}
 
 function populateKeywords(){const vals=[...new Set(latest.map(x=>String(x.keyword||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));setMultiOptions('keywordFilter',[{items:vals}]);}
 
@@ -506,7 +517,15 @@ function filtered(){
   return latest.filter(x=>{
     if(activeKpiFilter && !kpiMatches(x,activeKpiFilter)) return false;
     if(types.length && !types.includes(x.type)) return false;
-    if(systems.length && !systems.includes(x.system)) return false;
+    if(
+      systems.length &&
+      !systems.some(s =>
+        String(x.system||'')
+          .trim()
+          .split(/\s+/)
+          .includes(s)
+      )
+    ) return false;
     if(keywords.length && !keywords.includes(String(x.keyword||'').trim())) return false;
     if(holders.length && !holders.includes(x.current_holder)) return false;
     if(statuses.length && !statuses.some(st=>{const p=st.indexOf('|'),party=st.slice(0,p),value=st.slice(p+1);return party==='JCJV'?String(x.jcjv_status_display||'').trim()===value:String(x.employer_status||'').trim()===value;})) return false;
