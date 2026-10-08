@@ -569,7 +569,7 @@ function sortValue(x,key){
     case 'system': return String(x.system||'').trim();
     case 'subject': return String(x.subject||x.subject_vi||'').trim();
     case 'vietur_hard': return Number(x.vietur_hard_serial||0);
-    case 'deadline_calc': return Number(x.deadline_calc_serial||0);
+    case 'deadline_calc': return Number(x.deadline_serial||0);
     case 'jcjv_status': return String(x.jcjv_status_display||'').trim();
     case 'jcjv_hard': return Number(x.jcjv_hard_serial||0);
     case 'employer_status': return String(x.employer_status||'').trim();
