@@ -2,17 +2,12 @@
 title LTIA Dashboard - Excel Auto Sync to GitHub
 cd /d "%~dp0"
 
-set "GIT_CMD=git"
 where git >nul 2>&1
-if errorlevel 1 (
-  if exist "C:\Program Files\Git\cmd\git.exe" (
-    set "GIT_CMD=C:\Program Files\Git\cmd\git.exe"
-  ) else (
-    echo [ERROR] Git for Windows was not found.
-    echo Install Git for Windows first.
-    pause
-    exit /b 1
-  )
+if errorlevel 1 if not exist "C:\Program Files\Git\cmd\git.exe" if not exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" (
+  echo [ERROR] Git for Windows was not found.
+  echo Install Git for Windows first, then close and reopen this BAT.
+  pause
+  exit /b 1
 )
 
 if not exist "ICT-RFA-RFI-lists-New.xlsx" (
@@ -39,3 +34,4 @@ echo Close this window to stop the watcher.
 echo.
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0github_excel_sync.ps1"
+pause

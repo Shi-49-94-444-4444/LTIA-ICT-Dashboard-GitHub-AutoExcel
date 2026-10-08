@@ -10,55 +10,114 @@ $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ExcelPath = Join-Path $ProjectRoot $ExcelFile
 $SyncRoot = Join-Path $env:LOCALAPPDATA 'LTIA Dashboard\Git Data Sync'
 $SyncRepo = Join-Path $SyncRoot 'repo'
+$Remote = 'https://github.com/Shi-49-94-444-4444/LTIA-ICT-Dashboard-GitHub-AutoExcel.git'
 
-function RunGit([string[]]$Args) {
-  & git @Args
-  if ($LASTEXITCODE -ne 0) { throw "git $($Args -join ' ') failed with exit code $LASTEXITCODE" }
+if ($DataBranch -ne 'dashboard-data') {
+  throw 'This sync script is locked to the dashboard-data branch.'
 }
 
-function RunGitText([string[]]$Args) {
-  $result = & git @Args 2>&1
-  if ($LASTEXITCODE -ne 0) { throw "git $($Args -join ' ') failed: $($result -join ' ')" }
-  return ($result -join "`n").Trim()
+function Get-GitExe {
+  $candidates = @(
+    (Get-Command git.exe -ErrorAction SilentlyContinue).Source,
+    'C:\Program Files\Git\cmd\git.exe',
+    'C:\Program Files\Git\bin\git.exe',
+    "$env:LOCALAPPDATA\Programs\Git\cmd\git.exe"
+  ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and (Test-Path $_) }
+
+  if (-not $candidates) {
+    throw 'Git for Windows was not found. Install Git for Windows and reopen this BAT.'
+  }
+
+  return $candidates[0]
+}
+
+$GitExe = Get-GitExe
+
+# Compatible with Windows PowerShell 5.1 and PowerShell 7+.
+# Do NOT use ProcessStartInfo.ArgumentList here because it is unavailable in Windows PowerShell 5.1.
+function RunGit([string[]]$GitArgs) {
+  # Run Git and print its output, but DO NOT return the output from this
+  # helper. PowerShell captures function output when a function is used
+  # inside another function, which can corrupt values such as $SyncRepo.
+  $oldErrorAction = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $output = & $GitExe @GitArgs 2>&1
+    $code = $LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $oldErrorAction
+  }
+
+  $text = (($output | ForEach-Object { $_.ToString() }) -join "`n").Trim()
+
+  if ($code -ne 0) {
+    if ([string]::IsNullOrWhiteSpace($text)) { $text = '(git returned no diagnostic output)' }
+    throw "git $($GitArgs -join ' ') failed with exit code $code`n$text"
+  }
+
+  if (-not [string]::IsNullOrWhiteSpace($text)) {
+    Write-Host $text
+  }
+}
+
+function RunGitText([string[]]$GitArgs) {
+  # Same Git execution as RunGit, but intentionally returns text because
+  # the caller needs ls-remote output to detect the remote branch.
+  $oldErrorAction = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $output = & $GitExe @GitArgs 2>&1
+    $code = $LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $oldErrorAction
+  }
+
+  $text = (($output | ForEach-Object { $_.ToString() }) -join "`n").Trim()
+
+  if ($code -ne 0) {
+    if ([string]::IsNullOrWhiteSpace($text)) { $text = '(git returned no diagnostic output)' }
+    throw "git $($GitArgs -join ' ') failed with exit code $code`n$text"
+  }
+
+  return $text
 }
 
 function EnsureSyncRepo {
-  $remote = 'https://github.com/Shi-49-94-444-4444/LTIA-ICT-Dashboard-GitHub-AutoExcel.git'
-
   New-Item -ItemType Directory -Force -Path $SyncRoot | Out-Null
 
   if (-not (Test-Path (Join-Path $SyncRepo '.git'))) {
     if (Test-Path $SyncRepo) { Remove-Item -LiteralPath $SyncRepo -Recurse -Force }
-    RunGit @('clone', $remote, $SyncRepo)
+    Write-Host 'Cloning repository...'
+    RunGit @('clone', $Remote, $SyncRepo)
   }
 
-  RunGit @('-C', $SyncRepo, 'fetch', 'origin')
+  Write-Host 'Fetching origin...'
+  RunGit @('-C', $SyncRepo, 'fetch', '--prune', 'origin')
 
-  $remoteBranch = & git -C $SyncRepo ls-remote --heads origin $DataBranch 2>$null
-  $current = RunGitText @('-C', $SyncRepo, 'rev-parse', '--abbrev-ref', 'HEAD')
+  $remoteBranch = RunGitText @('-C', $SyncRepo, 'ls-remote', '--heads', 'origin', "refs/heads/$DataBranch")
 
-  if ($remoteBranch) {
-    if ($current -ne $DataBranch) {
-      & git -C $SyncRepo checkout $DataBranch 2>$null | Out-Null
-      if ($LASTEXITCODE -ne 0) { RunGit @('-C', $SyncRepo, 'checkout', '-B', $DataBranch, "origin/$DataBranch") }
-    }
+  if (-not [string]::IsNullOrWhiteSpace($remoteBranch)) {
+    Write-Host "Using existing remote branch: $DataBranch"
+    RunGit @('-C', $SyncRepo, 'checkout', '-B', $DataBranch, "origin/$DataBranch")
     RunGit @('-C', $SyncRepo, 'reset', '--hard', "origin/$DataBranch")
     RunGit @('-C', $SyncRepo, 'clean', '-fd')
   }
   else {
-    if ($current -ne $DataBranch) {
-      RunGit @('-C', $SyncRepo, 'checkout', '--orphan', $DataBranch)
-    }
-    & git -C $SyncRepo rm -rf . 2>$null | Out-Null
+    Write-Host "Remote branch does not exist yet. Creating: $DataBranch"
+    RunGit @('-C', $SyncRepo, 'checkout', '-B', $DataBranch, 'origin/main')
+    RunGit @('-C', $SyncRepo, 'rm', '-r', '--ignore-unmatch', '--', '.')
     RunGit @('-C', $SyncRepo, 'clean', '-fd')
   }
 
-  $rootName = (& git -C $ProjectRoot config user.name 2>$null).Trim()
-  $rootEmail = (& git -C $ProjectRoot config user.email 2>$null).Trim()
+  $rootName = (& $GitExe -C $ProjectRoot config user.name 2>$null | Out-String).Trim()
+  $rootEmail = (& $GitExe -C $ProjectRoot config user.email 2>$null | Out-String).Trim()
   if ([string]::IsNullOrWhiteSpace($rootName)) { $rootName = 'LTIA Dashboard Auto Sync' }
   if ([string]::IsNullOrWhiteSpace($rootEmail)) { $rootEmail = 'ltia-dashboard-sync@users.noreply.github.com' }
-  & git -C $SyncRepo config user.name $rootName
-  & git -C $SyncRepo config user.email $rootEmail
+
+  RunGit @('-C', $SyncRepo, 'config', 'user.name', $rootName)
+  RunGit @('-C', $SyncRepo, 'config', 'user.email', $rootEmail)
 
   return $SyncRepo
 }
@@ -70,6 +129,7 @@ function SyncExcel {
   $targetExcel = Join-Path $syncRepo $ExcelFile
   $targetDir = Split-Path -Parent $targetExcel
   New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+
   Copy-Item -LiteralPath $ExcelPath -Destination $targetExcel -Force
 
   $source = Get-Item -LiteralPath $ExcelPath
@@ -82,14 +142,35 @@ function SyncExcel {
   ) | Set-Content -LiteralPath $meta -Encoding UTF8
 
   RunGit @('-C', $syncRepo, 'add', '-f', '--', $ExcelFile, 'Data Last Updated.txt')
-  & git -C $syncRepo diff --cached --quiet
-  if ($LASTEXITCODE -eq 0) {
+
+  & $GitExe -C $syncRepo diff --cached --quiet 2>$null
+  $diffCode = $LASTEXITCODE
+  if ($diffCode -eq 0) {
     return $false
   }
 
   $message = "Auto-sync Excel $($source.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
   RunGit @('-C', $syncRepo, 'commit', '-m', $message)
-  RunGit @('-C', $syncRepo, 'push', '-u', 'origin', $DataBranch)
+
+  Write-Host 'Pushing dashboard-data to GitHub...'
+  try {
+    RunGit @('-C', $syncRepo, 'push', '--set-upstream', 'origin', $DataBranch)
+  }
+  catch {
+    throw @"
+PUSH FAILED.
+GitHub rejected the push. Most commonly this means GitHub authentication/permission is not set up for this PC.
+
+Try once in a normal CMD window:
+  git -C "$syncRepo" push --set-upstream origin $DataBranch
+
+If GitHub asks you to sign in, complete the browser sign-in, then run this BAT again.
+
+Detailed error:
+$($_.Exception.Message)
+"@
+  }
+
   return $true
 }
 
@@ -98,7 +179,7 @@ Write-Host ' LTIA Dashboard - Excel Auto Sync to GitHub'
 Write-Host '============================================='
 Write-Host "Excel : $ExcelPath"
 Write-Host "Branch: $DataBranch"
-if ($DataBranch -ne 'dashboard-data') { throw 'This sync script is configured for the dashboard-data branch. Do not change DataBranch.' }
+Write-Host 'Repo  : Shi-49-94-444-4444/LTIA-ICT-Dashboard-GitHub-AutoExcel'
 Write-Host "Poll  : every $CheckSeconds sec (stable for $StableSeconds sec)"
 Write-Host ''
 
