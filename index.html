@@ -764,7 +764,8 @@ async function applyPublishedData(payload, force=false){
     if(!payload) throw new Error('Excel payload is empty');
     if(force || payload.version!==lastVersion){
       DATA=payload.records||[];
-      latest=DATA.filter(x=>x.is_latest_calc);
+      // latest=DATA.filter(x=>x.is_latest_calc);
+      latest=DATA;
       byRef=Object.fromEntries(DATA.map(x=>[x.ref,x]));
       lastVersion=payload.version||'';
       setMultiOptions('typeFilter',[{items:['RFA','RFA-SDS','RFI']}]);
