@@ -12,40 +12,87 @@
     'RFA': {
       type: 'RFA',
       columns: {
-        system: 2, keyword: 3, ref: 4, deadline: 5, subject: 6, subject_vi: 7,
-        jcjv_status: 8, processing: 9, delay: 10, withdraw: 11,
-        links: [12, 13, 14, 15, 16], employer_status: 17,
-        vietur_soft: 18, vietur_email: 19, vietur_hard: 20,
-        jcjv_response: 21, jcjv_hard: 22, signed_by: 23,
-        employer_email: 24, employer_hard: 25,
-        resub_deadline: 26, actual_resub: 27, resub_assessment: 28,
-        resub_delay: 29, notes: 30
+        system: 2,
+        keyword: 3,
+        ref: 4,
+        deadline: 5,
+        subject: 6,
+        subject_vi: 7,
+        jcjv_status: 8,
+        processing: 9,
+        delay: 10,
+        withdraw: 11,
+        links: [12, 13, 14, 15, 16],
+        employer_status: 17,
+        vietur_soft: 18,
+        vietur_email: 19,
+        vietur_hard: 20,
+        jcjv_response: 21,
+        jcjv_hard: 22,
+        signed_by: 23,
+        employer_email: 24,
+        employer_hard: 25,
+        resub_deadline: 26,
+        actual_resub: 27,
+        resub_assessment: 28,
+        resub_delay: 29,
+        notes: 30
       }
     },
     'RFA-SDS': {
       type: 'RFA-SDS',
       keyword: 'SDS',
       columns: {
-        system: 2, ref: 3, deadline: 4, subject: 5, subject_vi: 6,
-        jcjv_status: 7, processing: 8, delay: 9, withdraw: 10,
-        links: [11, 12, 13, 14, 15], employer_status: 16,
-        vietur_soft: 17, vietur_email: 18, vietur_hard: 19,
-        jcjv_response: 20, jcjv_hard: 21, signed_by: 22,
-        employer_email: 23, employer_hard: 24,
-        resub_deadline: 25, actual_resub: 26, resub_assessment: 27,
-        resub_delay: 28, notes: 29
+        system: 2,
+        ref: 3,
+        deadline: 4,
+        subject: 5,
+        subject_vi: 6,
+        jcjv_status: 7,
+        processing: 8,
+        delay: 9,
+        withdraw: 10,
+        links: [11, 12, 13, 14, 15],
+        employer_status: 16,
+        vietur_soft: 17,
+        vietur_email: 18,
+        vietur_hard: 19,
+        jcjv_response: 20,
+        jcjv_hard: 21,
+        signed_by: 22,
+        employer_email: 23,
+        employer_hard: 24,
+        resub_deadline: 25,
+        actual_resub: 26,
+        resub_assessment: 27,
+        resub_delay: 28,
+        notes: 29
       }
     },
     'RFI': {
       type: 'RFI',
       keyword: 'RFI',
       columns: {
-        system: 2, ref: 3, deadline: 4, subject: 5, subject_vi: 6,
-        jcjv_status: 7, processing: 8, delay: 9, withdraw: 10,
-        links: [11, 12, 13, 14, 15], employer_status: 16,
-        vietur_soft: 17, vietur_email: 18, vietur_hard: 19,
-        jcjv_response: 20, jcjv_hard: 21, signed_by: 22,
-        employer_email: 23, employer_hard: 24, notes: 25
+        system: 2,
+        ref: 3,
+        deadline: 4,
+        subject: 5,
+        subject_vi: 6,
+        jcjv_status: 7,
+        processing: 8,
+        delay: 9,
+        withdraw: 10,
+        links: [11, 12, 13, 14, 15],
+        employer_status: 16,
+        vietur_soft: 17,
+        vietur_email: 18,
+        vietur_hard: 19,
+        jcjv_response: 20,
+        jcjv_hard: 21,
+        signed_by: 22,
+        employer_email: 23,
+        employer_hard: 24,
+        notes: 25
       }
     }
   };
@@ -53,7 +100,10 @@
   const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
 
   function encodeCell(row, col) {
-    return XLSX.utils.encode_cell({ r: row, c: col });
+    return XLSX.utils.encode_cell({
+      r: row,
+      c: col
+    });
   }
 
   function cell(ws, row, col) {
@@ -246,7 +296,12 @@
   }
 
   function parseWorkbook(buffer) {
-    const workbook = XLSX.read(buffer, { type: 'array', cellDates: false, cellHTML: false, cellStyles: true });
+    const workbook = XLSX.read(buffer, {
+      type: 'array',
+      cellDates: false,
+      cellHTML: false,
+      cellStyles: true
+    });
     const records = [];
 
     Object.keys(SHEET_SPECS).forEach(sheetName => {
@@ -267,7 +322,10 @@
     });
 
     groups.forEach(group => {
-      const active = group.filter(r => String(r.withdraw || '').trim().toUpperCase() !== 'X');
+      const active = group.filter(
+        r => String(r.withdraw || '').trim().toUpperCase() !== 'X' &&
+        String(r.withdraw || '').trim().toUpperCase() !== 'O'
+      );
       const latest = active.length ? active[active.length - 1] : null;
       if (latest) latest.latest = '1';
       group.forEach(r => {
@@ -285,7 +343,9 @@
     return {
       version: shortHash(buffer),
       source_modified: sourceDate,
-      published_at: new Date().toLocaleString('en-GB', { hour12: false }),
+      published_at: new Date().toLocaleString('en-GB', {
+        hour12: false
+      }),
       records,
       error: ''
     };
@@ -322,11 +382,16 @@
     const errors = [];
     for (const url of candidates()) {
       try {
-        const response = await fetch(bust(url), { cache: 'no-store' });
+        const response = await fetch(bust(url), {
+          cache: 'no-store'
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const buffer = await response.arrayBuffer();
         if (!buffer.byteLength) throw new Error('Empty workbook');
-        return { payload: parseWorkbook(buffer), url };
+        return {
+          payload: parseWorkbook(buffer),
+          url
+        };
       } catch (err) {
         errors.push(`${url}: ${err.message}`);
       }
