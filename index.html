@@ -87,6 +87,10 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
 .related-list{padding-top:8px}.related-item{display:flex;align-items:center;gap:9px;padding:10px 2px;border-bottom:1px solid #edf0f5}.related-item .doc{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.notes{white-space:pre-wrap;color:#586477;padding:12px 2px}
 .small-link{display:inline-block;margin-right:9px;margin-bottom:4px}
 .empty{padding:40px;text-align:center;color:#8c96a6}
+.system-cell{
+  white-space:pre-line;
+  line-height:1.25;
+}
 @media(max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}.modal-body{grid-template-columns:1fr}.leftgrid{grid-template-columns:1fr}.tabs{display:none}.actions .hide-sm{display:none}}
 
 
@@ -542,7 +546,7 @@ function render(){
   const rows=filtered();
   const tb=document.getElementById('tbody');
   tb.innerHTML=rows.length?rows.map(x=>`<tr onclick="openModal('${x.ref.replace(/'/g,"\\'")}')">
-    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td><b>${esc(x.system||'—')}</b></td>
+    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(String(x.system||'—').trim().split(/\s+/).join('\n'))}</b></td>
     <td class="subject">${esc(x.subject||x.subject_vi||'—')}</td>
     <td>${datev(x.vietur_hard)}</td><td>${isWithdrawnChanged(x)?'':datev(x.deadline_calc)}</td><td class="center">${isWithdrawnChanged(x)?'':badge(x.jcjv_status_display)}</td>
     <td>${isWithdrawnChanged(x)?'':datev(x.jcjv_hard)}</td><td class="center">${isWithdrawnChanged(x)?'':badge(x.employer_status)}</td><td>${isWithdrawnChanged(x)?'':datev(x.employer_hard)}</td>
@@ -688,7 +692,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 function getPrintMeta(){const rows=filtered(),parts=[`Printed: ${new Date().toLocaleString('en-GB',{hour12:false})}`,`Records: ${rows.length}`];const add=(id,label)=>{const v=mfState(id);if(v.length)parts.push(`${label}: ${v.join(', ')}`);};add('typeFilter','Type');add('systemFilter','System');add('keywordFilter','Keyword');add('holderFilter','Holder');const sv=mfState('statusFilter');if(sv.length)parts.push(`Status: ${sv.map(v=>v.replace('JCJV|','JCJV ').replace('EMP|','Employer ')).join(', ')}`);return {rows,line:parts.join(' | ')};}
 function printRowsHTML(rows){
   return rows.map(x=>`<tr>
-    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td><b>${esc(x.system||'—')}</b></td>
+    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(String(x.system||'—').trim().split(/\s+/).join('\n'))}</b></td>
     <td class="subject">${esc(x.subject||x.subject_vi||'—')}</td><td>${datev(x.vietur_hard)}</td>
     <td>${isWithdrawnChanged(x)?'':datev(x.deadline_calc)}</td>
     <td class="center">${isWithdrawnChanged(x)?'':badge(x.jcjv_status_display)}</td>
