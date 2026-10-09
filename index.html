@@ -251,8 +251,84 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
 }
 </style>
 
+
+<style id="initial-dashboard-loading-style">
+  @keyframes ltiaShimmer {
+    0% { background-position: 180% 0; }
+    100% { background-position: -80% 0; }
+  }
+  @keyframes ltiaReveal {
+    from { opacity: .45; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .ltia-skeleton {
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%;
+    animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 5px;
+  }
+  body.is-loading .kpi .label {
+    width: 62%; height: 12px; color: transparent !important;
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 4px;
+  }
+  body.is-loading .kpi .value {
+    width: 52px; height: 25px; margin: 7px auto 0; color: transparent !important;
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 5px; font-size: 0 !important;
+  }
+  body.is-loading .kpi-total small {
+    width: 38px; height: 8px; margin: 5px auto 0; color: transparent !important;
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 4px; font-size: 0 !important;
+  }
+  body.is-loading .ks b {
+    width: 28px; height: 14px; margin: 0 auto; color: transparent !important;
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 4px; font-size: 0 !important;
+  }
+  body.is-loading .ks span {
+    width: 32px; height: 8px; margin: 4px auto 0; color: transparent !important;
+    background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
+    background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
+    border-radius: 4px; font-size: 0 !important;
+  }
+  body.is-loading .table-wrap { pointer-events: none; }
+  .skeleton-row td { height: 42px; }
+  .skeleton-row .sk-line { display:block; height:10px; width:72%; }
+  .skeleton-row td:nth-child(1) .sk-line { width:88%; }
+  .skeleton-row td:nth-child(2) .sk-line { width:35px; }
+  .skeleton-row td:nth-child(3) .sk-line { width:55px; }
+  .skeleton-row td:nth-child(4) .sk-line { width:92%; }
+  .skeleton-row td:nth-child(5) .sk-line,
+  .skeleton-row td:nth-child(6) .sk-line { width:68px; }
+  .skeleton-row td:nth-child(7) .sk-line,
+  .skeleton-row td:nth-child(9) .sk-line { width:30px; }
+  .skeleton-row td:nth-child(11) .sk-line { width:64px; }
+  .skeleton-row td:nth-child(12) .sk-line { width:76px; }
+  body.data-ready .kpi { animation: ltiaReveal .34s ease-out both; }
+  body.data-ready .kpi:nth-child(2) { animation-delay:.035s; }
+  body.data-ready .kpi:nth-child(3) { animation-delay:.07s; }
+  body.data-ready .kpi:nth-child(4) { animation-delay:.105s; }
+  body.data-ready .kpi:nth-child(5) { animation-delay:.14s; }
+  body.data-ready .table-card { animation: ltiaReveal .38s ease-out .08s both; }
+  @media (prefers-reduced-motion: reduce) {
+    .ltia-skeleton,
+    body.is-loading .kpi .label,
+    body.is-loading .kpi .value,
+    body.is-loading .kpi-total small,
+    body.is-loading .ks b,
+    body.is-loading .ks span { animation:none !important; }
+    body.data-ready .kpi, body.data-ready .table-card { animation:none !important; }
+  }
+</style>
+
 </head>
-<body>
+<body class="is-loading">
 <div class="app">
   <div class="topbar">
     <div class="brandwrap">
@@ -364,7 +440,7 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
             <th class="sortable" onclick="toggleSort('response')">Response Status <span class="sort-icon" data-sort="response">⇅</span></th>
             <th class="sortable" onclick="toggleSort('delayed')">Delayed Days <span class="sort-icon" data-sort="delayed">⇅</span></th>
           </tr></thead>
-          <tbody id="tbody"></tbody>
+          <tbody id="tbody"><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr><tr class="skeleton-row"><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td><td><span class="sk-line ltia-skeleton"></span></td></tr></tbody>
         </table>
       </div>
       <div class="footerbar">
@@ -407,6 +483,42 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
     </div>
   </div>
 </div>
+
+
+<script id="initial-dashboard-loading-control">
+(function () {
+  window.__ltiaInitialLoadDone = false;
+  window.__ltiaFinishInitialLoad = function (ok, message) {
+    // Ignore duplicate failures, but allow a late successful response to recover after timeout.
+    if (window.__ltiaInitialLoadDone && !ok) return;
+    window.__ltiaInitialLoadDone = true;
+    document.body.classList.remove('is-loading');
+    document.body.classList.toggle('data-error', !ok);
+    document.body.classList.toggle('data-ready', !!ok);
+    if (!ok) {
+      var status = document.getElementById('dataStatus');
+      if (status && message) status.textContent = message;
+      var body = document.getElementById('tbody');
+      if (body && body.querySelector('.skeleton-row')) {
+        body.innerHTML = '<tr><td colspan="13" class="empty">' +
+          (message || 'Unable to load Excel data. Please refresh the page.') +
+          '</td></tr>';
+      }
+    }
+  };
+  window.setTimeout(function () {
+    if (!window.__ltiaInitialLoadDone) {
+      var status = document.getElementById('dataStatus');
+      if (status) status.textContent = 'Still loading Excel…';
+    }
+  }, 12000);
+  window.setTimeout(function () {
+    if (!window.__ltiaInitialLoadDone) {
+      window.__ltiaFinishInitialLoad(false, 'Excel load timed out. Please refresh the page.');
+    }
+  }, 45000);
+})();
+</script>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="dashboard-config.js"></script>
@@ -585,33 +697,23 @@ function sortValue(x,key){
 }
 
 function sortRows(rows){
+  // Default view: newest Vietur hard-copy date first, same as the original dashboard.
   if(!activeSort.key){
     return [...rows].sort((a,b)=>{
       const av=Number(a.vietur_hard_serial||0);
       const bv=Number(b.vietur_hard_serial||0);
-
-      if(bv!==av)return bv-av;
-
+      if(bv!==av) return bv-av;
       return String(b.ref||'').localeCompare(String(a.ref||''));
     });
   }
 
   const key=activeSort.key;
   const direction=activeSort.direction==='asc' ? 1 : -1;
-
   return [...rows].sort((a,b)=>{
     const av=sortValue(a,key);
     const bv=sortValue(b,key);
-
-    if(typeof av==='number' && typeof bv==='number'){
-      return (av-bv)*direction;
-    }
-
-    return String(av).localeCompare(
-      String(bv),
-      undefined,
-      {numeric:true,sensitivity:'base'}
-    )*direction;
+    if(typeof av==='number' && typeof bv==='number') return (av-bv)*direction;
+    return String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:'base'})*direction;
   });
 }
 
@@ -919,8 +1021,10 @@ async function applyPublishedData(payload, force=false){
     const status=document.getElementById('dataStatus');
     status.textContent='Excel loaded: '+(payload.source_modified||payload.published_at||'—');
     status.title='Loaded directly from the Excel source file';
+    if(window.__ltiaFinishInitialLoad) window.__ltiaFinishInitialLoad(true);
   }catch(err){
     document.getElementById('dataStatus').textContent='Excel data error';
+    if(window.__ltiaFinishInitialLoad) window.__ltiaFinishInitialLoad(false,'Excel data error. Please refresh the page.');
     console.error(err);
   }
 }
@@ -931,6 +1035,7 @@ async function reloadPublishedData(force=false){
     await applyPublishedData(result.payload, force);
   }catch(err){
     document.getElementById('dataStatus').textContent='Cannot read Excel';
+    if(window.__ltiaFinishInitialLoad) window.__ltiaFinishInitialLoad(false,'Cannot read Excel. Please refresh the page.');
     console.error(err);
   }
 }
