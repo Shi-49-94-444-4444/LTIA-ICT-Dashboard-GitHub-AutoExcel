@@ -42,7 +42,7 @@
 .main{padding:22px 28px 40px;max-width:1920px;margin:auto}
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:17px;padding:10px 12px;background:#f9fbff;border:1px solid #e2e8f4;border-radius:10px}.search{flex:1;max-width:620px;position:relative}.search input{width:100%;height:42px;border:1px solid #dce2eb;border-radius:9px;padding:0 40px 0 14px;background:#fff;outline:none}.search input:focus{border-color:#8da9ec;box-shadow:0 0 0 3px #eaf0ff}
 .select{height:42px;border:1px solid #dce2eb;border-radius:9px;padding:0 34px 0 11px;background:#fff;color:#4f5969;font-weight:600}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;margin-bottom:18px}.kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,40,70,.02)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;margin-bottom:18px}.kpi{height:162px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;box-shadow:0 1px 2px rgba(20,40,70,.02)}
 .kpi.docs{border-top:4px solid #5f82d8}
 .kpi.jcjv-review{border-top:4px solid #e5a448}
 .kpi.employer-pending{border-top:4px solid #d5bf48}
@@ -64,7 +64,7 @@
 .filter-chipbar{display:none;align-items:center;gap:8px;margin:0 0 12px;padding:8px 11px;border:1px solid #dfe6f2;background:#fff;border-radius:9px;color:#596579;font-size:12px}
 .filter-chipbar.show{display:flex}.filter-chipbar b{color:#30415f}.filter-clear{margin-left:auto;border:0;background:#eef3fb;color:#50617d;border-radius:6px;padding:5px 9px;font-weight:750;cursor:pointer}
 .table-card{background:#fff;border:1px solid #dfe5ef;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(20,40,70,.02);border-top:4px solid #6f86b8}
-.table-wrap{overflow:auto;max-height:calc(100vh - 260px)} table{border-collapse:separate;border-spacing:0;width:100%;min-width:1450px}
+.table-wrap{overflow:auto;height:clamp(320px, calc(100vh - 260px), 640px);max-height:640px} table{border-collapse:separate;border-spacing:0;width:100%;min-width:1450px}
 th{position:sticky;top:0;background:#f8fafc;z-index:2;text-align:left;color:#566174;font-size:12px;padding:12px 11px;border-bottom:1px solid var(--line);white-space:nowrap}
 th:nth-child(1),th:nth-child(2),th:nth-child(3),th:nth-child(4){background:#eef3ff;color:#405b96}
     th:nth-child(1),th:nth-child(4){text-align:left}
@@ -115,7 +115,7 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
 .sortable.active.asc .sort-icon{
   color:#3159a6;
 }
-@media(max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}.modal-body{grid-template-columns:1fr}.leftgrid{grid-template-columns:1fr}.tabs{display:none}.actions .hide-sm{display:none}}
+@media(max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi{height:auto;min-height:162px}.table-wrap{height:clamp(300px, calc(100vh - 300px), 640px)}.modal-body{grid-template-columns:1fr}.leftgrid{grid-template-columns:1fr}.tabs{display:none}.actions .hide-sm{display:none}}
 
 
 /* Action buttons - clean neutral style */
@@ -129,7 +129,7 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
   .kpis{grid-template-columns:repeat(5,1fr)!important;gap:6px!important;margin-bottom:10px!important}
   .kpi{box-shadow:none!important;border:1px solid #cfd6e3!important;break-inside:avoid}
   .table-card{overflow:visible!important;border:1px solid #bcc6d6!important;box-shadow:none!important}
-  .table-wrap{overflow:visible!important;max-height:none!important}
+  .table-wrap{overflow:visible!important;height:auto!important;min-height:0!important;max-height:none!important}
   table{font-size:8.5pt!important;width:100%!important}
   th{position:static!important}
   td,th{white-space:normal!important;padding:6px 5px!important}
@@ -163,7 +163,7 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
     outline:0!important;
     box-shadow:none!important;
     overflow:visible!important;
-    max-height:none!important;
+    height:auto!important;min-height:0!important;max-height:none!important;
     width:100%!important;
   }
   table{
@@ -258,8 +258,8 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
     100% { background-position: -80% 0; }
   }
   @keyframes ltiaReveal {
-    from { opacity: .45; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: .35; }
+    to { opacity: 1; }
   }
   .ltia-skeleton {
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
@@ -268,31 +268,31 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
     border-radius: 5px;
   }
   body.is-loading .kpi .label {
-    width: 62%; height: 12px; color: transparent !important;
+    width: 62%; height: 17px; line-height: 17px; color: transparent !important;
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
     background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
     border-radius: 4px;
   }
   body.is-loading .kpi .value {
-    width: 52px; height: 25px; margin: 7px auto 0; color: transparent !important;
+    width: 52px; height: 35px; line-height: 35px; margin: 4px auto 0; color: transparent !important;
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
     background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
     border-radius: 5px; font-size: 0 !important;
   }
   body.is-loading .kpi-total small {
-    width: 38px; height: 8px; margin: 5px auto 0; color: transparent !important;
+    display:block; width: 38px; height: 14px; line-height: 14px; margin: 0 auto; color: transparent !important;
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
     background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
     border-radius: 4px; font-size: 0 !important;
   }
   body.is-loading .ks b {
-    width: 28px; height: 14px; margin: 0 auto; color: transparent !important;
+    display:block; width: 28px; height: 22px; line-height: 22px; margin: 0 auto; color: transparent !important;
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
     background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
     border-radius: 4px; font-size: 0 !important;
   }
   body.is-loading .ks span {
-    width: 32px; height: 8px; margin: 4px auto 0; color: transparent !important;
+    width: 32px; height: 14px; line-height: 14px; margin: 1px auto 0; color: transparent !important;
     background: linear-gradient(100deg, #edf1f7 15%, #f8faff 35%, #e8edf5 55%);
     background-size: 220% 100%; animation: ltiaShimmer 1.35s ease-in-out infinite;
     border-radius: 4px; font-size: 0 !important;
@@ -487,6 +487,14 @@ td{padding:10px 11px;border-bottom:1px solid #edf0f5;vertical-align:middle} tbod
 
 <script id="initial-dashboard-loading-control">
 (function () {
+  // Fill the fixed-height table viewport with placeholders before requesting Excel.
+  var skeletonBody = document.getElementById('tbody');
+  if (skeletonBody) {
+    var skeletonTemplate = skeletonBody.querySelector('.skeleton-row');
+    while (skeletonTemplate && skeletonBody.querySelectorAll('.skeleton-row').length < 14) {
+      skeletonBody.appendChild(skeletonTemplate.cloneNode(true));
+    }
+  }
   window.__ltiaInitialLoadDone = false;
   window.__ltiaFinishInitialLoad = function (ok, message) {
     // Ignore duplicate failures, but allow a late successful response to recover after timeout.
