@@ -649,17 +649,22 @@ function multiFilterChanged(id){MULTI_FILTERS[id].values=[...document.querySelec
 function clearMultiFilter(id,doRender=true){MULTI_FILTERS[id].values=[];const root=document.getElementById(id+'Multi');if(root)root.querySelectorAll('input').forEach(i=>i.checked=false);updateMultiLabel(id);if(doRender)render();}
 document.addEventListener('click',()=>document.querySelectorAll('.multi-filter.open').forEach(x=>x.classList.remove('open')));
 
-function populateSystems(){
-  const vals=[...new Set(
-    latest.flatMap(x =>
-      String(x.system||'')
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-    )
-  )].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+function systemTokens(value){
+  const text = String(value || '').trim();
+  if (!text) return [];
 
-  setMultiOptions('systemFilter',[{items:vals}]);
+  return (text.match(/Smart\s+Parking|[^\s]+/gi) || [])
+    .map(s => /^smart\s+parking$/i.test(s) ? 'Smart Parking' : s);
+}
+
+function populateSystems(){
+  const vals = [...new Set(
+    latest.flatMap(x => systemTokens(x.system))
+  )].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' })
+  );
+
+  setMultiOptions('systemFilter', [{ items: vals }]);
 }
 
 function populateKeywords(){const vals=[...new Set(latest.map(x=>String(x.keyword||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));setMultiOptions('keywordFilter',[{items:vals}]);}
@@ -747,13 +752,12 @@ function filtered(){
   return latest.filter(x=>{
     if(activeKpiFilter && !kpiMatches(x,activeKpiFilter)) return false;
     if(types.length && !types.includes(x.type)) return false;
-    if(
+    if (
       systems.length &&
       !systems.some(s =>
-        String(x.system||'')
-          .trim()
-          .split(/\s+/)
-          .includes(s)
+        systemTokens(x.system).some(
+          token => token.toLowerCase() === s.toLowerCase()
+        )
       )
     ) return false;
     if(keywords.length && !keywords.includes(String(x.keyword||'').trim())) return false;
@@ -773,7 +777,7 @@ function render(){
   updateSortHeaders();
   const tb=document.getElementById('tbody');
   tb.innerHTML=rows.length?rows.map(x=>`<tr onclick="openModal('${x.ref.replace(/'/g,"\\'")}')">
-    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(String(x.system||'—').trim().split(/\s+/).join('\n'))}</b></td>
+    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(systemTokens(x.system).join('\n') || '—')}</b></td>
     <td class="subject">${esc(x.subject||x.subject_vi||'—')}</td>
     <td>${datev(x.vietur_hard)}</td><td>${isWithdrawnChanged(x)?'':datev(x.deadline_calc)}</td><td class="center">${isWithdrawnChanged(x)?'':badge(x.jcjv_status_display)}</td>
     <td>${isWithdrawnChanged(x)?'':datev(x.jcjv_hard)}</td><td class="center">${isWithdrawnChanged(x)?'':badge(x.employer_status)}</td><td>${isWithdrawnChanged(x)?'':datev(x.employer_hard)}</td>
@@ -919,7 +923,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 function getPrintMeta(){const rows=filtered(),parts=[`Printed: ${new Date().toLocaleString('en-GB',{hour12:false})}`,`Records: ${rows.length}`];const add=(id,label)=>{const v=mfState(id);if(v.length)parts.push(`${label}: ${v.join(', ')}`);};add('typeFilter','Type');add('systemFilter','System');add('keywordFilter','Keyword');add('holderFilter','Holder');const sv=mfState('statusFilter');if(sv.length)parts.push(`Status: ${sv.map(v=>v.replace('JCJV|','JCJV ').replace('EMP|','Employer ')).join(', ')}`);return {rows,line:parts.join(' | ')};}
 function printRowsHTML(rows){
   return rows.map(x=>`<tr>
-    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(String(x.system||'—').trim().split(/\s+/).join('\n'))}</b></td>
+    <td class="ref">${esc(x.ref)}</td><td>${esc(x.type)}</td><td class="system-cell"><b>${esc(systemTokens(x.system).join('\n') || '—')}</b></td>
     <td class="subject">${esc(x.subject||x.subject_vi||'—')}</td><td>${datev(x.vietur_hard)}</td>
     <td>${isWithdrawnChanged(x)?'':datev(x.deadline_calc)}</td>
     <td class="center">${isWithdrawnChanged(x)?'':badge(x.jcjv_status_display)}</td>
